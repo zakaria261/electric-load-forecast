@@ -1,4 +1,6 @@
-"""Benchmark LSTM / TCN x historique 24/48/168 h : entraînement sur train, choix sur validation."""
+"""ARCHIVE : protocole historique 70/15/15, scores non comparables au protocole annuel.
+
+Benchmark LSTM / TCN x historique 24/48/168 h : entraînement sur train, choix sur validation."""
 import json
 import sys
 import time
@@ -18,7 +20,7 @@ from src.utils import LOOKBACKS, RESULTS_DIR, set_seed
 
 set_seed()
 (RESULTS_DIR / "models").mkdir(parents=True, exist_ok=True)
-ds = build_dataset()
+ds = build_dataset(split_mode="legacy")
 xs, mean, std = ds.preprocess(ds.train_end)          # ajustés sur le train seulement
 vt = ds.truth(ds.valid_origins)
 

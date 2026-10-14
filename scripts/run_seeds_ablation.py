@@ -1,4 +1,6 @@
-"""4 configs x 3 graines x {avec, sans} calendrier. Sélection sur validation uniquement."""
+"""ARCHIVE : protocole historique 70/15/15, scores non comparables au protocole annuel.
+
+4 configs x 3 graines x {avec, sans} calendrier. Sélection sur validation uniquement."""
 import sys
 import time
 import warnings
@@ -17,7 +19,7 @@ from src.utils import RESULTS_DIR
 
 SEEDS = [0, 1, 2]
 CONFIGS = [("LSTM", 24), ("LSTM", 168), ("TCN", 24), ("TCN", 168)]
-ds = build_dataset()
+ds = build_dataset(split_mode="legacy")
 xs, mean, std = ds.preprocess(ds.train_end)
 vt = ds.truth(ds.valid_origins)
 

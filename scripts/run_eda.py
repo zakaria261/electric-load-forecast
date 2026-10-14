@@ -1,4 +1,4 @@
-"""Analyse exploratoire sur la partition d'entraînement uniquement. Figures -> results/figures/."""
+"""Analyse exploratoire sur l'entraînement du protocole annuel. Figures -> results/figures/."""
 import sys
 import warnings
 from pathlib import Path
@@ -31,7 +31,7 @@ def save(name):
 
 raw = load_raw()
 hourly = to_hourly(raw)
-ds = Dataset(hourly)
+ds = Dataset(hourly, split_mode="annual")
 train = hourly["Global_active_power"].iloc[:ds.train_end]
 
 # --- Tableau descriptif

@@ -77,7 +77,7 @@ class Dataset:
     une borne) ; les fenêtres à cibles incomplètes sont écartées.
     """
 
-    def __init__(self, hourly: pd.DataFrame, split_mode: str = "legacy"):
+    def __init__(self, hourly: pd.DataFrame, split_mode: str = "annual"):
         self.hourly = hourly
         self.time_index = hourly.index
         self.y = hourly["Global_active_power"].to_numpy(float)
@@ -180,5 +180,6 @@ class Dataset:
         return tuple(np.asarray(v, np.float32) for v in (xh, xf, yy))
 
 
-def build_dataset(path=DATA_PATH, split_mode: str = "legacy") -> Dataset:
+def build_dataset(path=DATA_PATH, split_mode: str = "annual") -> Dataset:
+    """Construit le protocole annuel du notebook ; le mode legacy reste explicite."""
     return Dataset(to_hourly(load_raw(path)), split_mode=split_mode)

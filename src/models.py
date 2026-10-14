@@ -102,11 +102,18 @@ if torch is not None:
             return torch.relu(z + self.skip(x))
 
     class TCNForecaster(nn.Module):
-        """3 blocs dilatés (1,2,4) : champ réceptif 29 h ; lecture du dernier pas temporel."""
-        def __init__(self, d_in: int, d_future: int, channels: int = 32):
+        """Convolutions causales couvrant toute la fenêtre historique choisie."""
+        def __init__(self, d_in: int, d_future: int, channels: int = 32,
+                     lookback: int = 24):
             super().__init__()
-            self.conv = nn.Sequential(_Block(d_in, channels, 1), _Block(channels, channels, 2),
-                                      _Block(channels, channels, 4))
+            blocks, receptive_field, dilation, in_channels = [], 1, 1, d_in
+            while receptive_field < lookback:
+                blocks.append(_Block(in_channels, channels, dilation))
+                in_channels = channels
+                receptive_field += 4 * dilation  # deux convolutions de noyau 3 par bloc
+                dilation *= 2
+            self.receptive_field = receptive_field
+            self.conv = nn.Sequential(*blocks)
             self.head = nn.Sequential(nn.Linear(channels + HORIZON * d_future, 64), nn.ReLU(),
                                       nn.Linear(64, HORIZON))
 
@@ -115,7 +122,11 @@ if torch is not None:
             return self.head(torch.cat([z, f.flatten(1)], 1))
 
 
-def build_net(kind: str, d_in: int, d_future: int):
+def build_net(kind: str, d_in: int, d_future: int, lookback: int = 24):
     if torch is None:
         raise RuntimeError("torch indisponible : réparer l'installation avant d'entraîner LSTM/TCN")
-    return {"LSTM": LSTMForecaster, "TCN": TCNForecaster}[kind](d_in, d_future)
+    if kind == "TCN":
+        return TCNForecaster(d_in, d_future, lookback=lookback)
+    if kind == "LSTM":
+        return LSTMForecaster(d_in, d_future)
+    raise ValueError(f"Architecture inconnue : {kind}")

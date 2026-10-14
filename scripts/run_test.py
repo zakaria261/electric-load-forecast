@@ -1,4 +1,6 @@
-"""Test final : une seule évaluation des finalistes fixés sur la validation.
+"""ARCHIVE : protocole historique 70/15/15, scores non comparables au protocole annuel.
+
+Test final : une seule évaluation des finalistes fixés sur la validation.
 
 Finalistes (annoncés avant le test) : SARIMA (meilleure MAE de validation) et
 TCN 168 h + calendrier (meilleur réseau). Référence : saisonnier hebdomadaire (J-7).
@@ -29,7 +31,7 @@ FIG = RESULTS_DIR / "figures"
 FIG.mkdir(parents=True, exist_ok=True)
 SEEDS = [0, 1, 2]
 
-ds = build_dataset()
+ds = build_dataset(split_mode="legacy")
 y, ti = ds.y, ds.time_index
 vt, tt = ds.truth(ds.valid_origins), ds.truth(ds.test_origins)
 thr = float(np.nanquantile(y[:ds.train_end], .95))          # seuil de pic : P95 du train

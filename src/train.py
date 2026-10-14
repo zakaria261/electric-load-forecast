@@ -23,7 +23,7 @@ def fit_net(kind, lookback, ds, train_origins, xs, mean, std, use_calendar=True,
     """
     set_seed(seed)
     x, f, y = _tensors(ds, train_origins, lookback, xs, mean, std, use_calendar)
-    model = build_net(kind, x.shape[-1], f.shape[-1])
+    model = build_net(kind, x.shape[-1], f.shape[-1], lookback=lookback)
     loader = torch.utils.data.DataLoader(torch.utils.data.TensorDataset(x, f, y), batch_size=batch_size,
                                          shuffle=True, generator=torch.Generator().manual_seed(seed))
     if val_origins is not None:

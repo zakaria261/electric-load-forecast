@@ -1,4 +1,6 @@
-"""SARIMA(1,0,1)(1,0,1)_24 : validation (ajusté jusqu'à train_end)."""
+"""ARCHIVE : protocole historique 70/15/15, scores non comparables au protocole annuel.
+
+SARIMA(1,0,1)(1,0,1)_24 : validation (ajusté jusqu'à train_end)."""
 import sys
 import time
 import warnings
@@ -14,7 +16,7 @@ from src.evaluate import score
 from src.models import sarima_predict
 from src.utils import RESULTS_DIR
 
-ds = build_dataset()
+ds = build_dataset(split_mode="legacy")
 t0 = time.time()
 p = sarima_predict(ds.y, ds.time_index, ds.train_end, ds.valid_origins)
 vt = ds.truth(ds.valid_origins)

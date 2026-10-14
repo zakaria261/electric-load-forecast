@@ -4,6 +4,7 @@ __pycache__/
 
 data/
 results/models/
+results/**/rolling_cv_partial.csv
 
 .DS_Store
 *.pyc

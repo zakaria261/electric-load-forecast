@@ -1,0 +1,2 @@
+modele,MAE_moyenne_plis_kW,MAE_ecart_type_plis_kW,MAE_globale_kW,RMSE_globale_kW,n_previsions
+TCN 24h sans calendrier,0.5194029546666006,0.07297401582043168,0.519689463530014,0.6810025454593955,33888

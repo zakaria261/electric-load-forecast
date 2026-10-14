@@ -1,4 +1,6 @@
-"""Évalue les baselines sur validation (choix) puis test (une seule fois, pour référence)."""
+"""ARCHIVE : protocole historique 70/15/15, scores non comparables au protocole annuel.
+
+Évalue les baselines sur validation (choix) puis test (une seule fois, pour référence)."""
 import sys
 import warnings
 from pathlib import Path
@@ -20,7 +22,7 @@ from src.utils import RESULTS_DIR, set_seed
 set_seed()
 FIG = RESULTS_DIR / "figures"
 FIG.mkdir(parents=True, exist_ok=True)
-ds = build_dataset()
+ds = build_dataset(split_mode="legacy")
 y = ds.y
 
 fb_val = float(np.nanmedian(y[:ds.train_end]))          # fallback = médiane du train
