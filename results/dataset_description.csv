@@ -1,0 +1,8 @@
+,type,manquants,manquants_%,min,moyenne,max
+Global_active_power,float64,25979,1.252,0.076,1.092,11.122
+Global_reactive_power,float64,25979,1.252,0.0,0.124,1.39
+Voltage,float64,25979,1.252,223.2,240.84,254.15
+Global_intensity,float64,25979,1.252,0.2,4.628,48.4
+Sub_metering_1,float64,25979,1.252,0.0,1.122,88.0
+Sub_metering_2,float64,25979,1.252,0.0,1.299,80.0
+Sub_metering_3,float64,25979,1.252,0.0,6.458,31.0
