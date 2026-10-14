@@ -4,7 +4,8 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 
-from .utils import (DATA_PATH, EVAL_STRIDE, FEATURES, HORIZON, LOOKBACKS, MIN_MINUTES,
+from .utils import (ANNUAL_TEST_YEARS, ANNUAL_VALID_YEARS, DATA_PATH, EVAL_STRIDE,
+                    FEATURES, HORIZON, LOOKBACKS, MIN_MINUTES, ROLLING_FOLD_MONTHS,
                     SUBMETERS, TRAIN_FRAC, TRAIN_STRIDE, VALID_FRAC)
 
 CAL_COLS = ["hour_sin", "hour_cos", "weekday_sin", "weekday_cos",
@@ -76,30 +77,80 @@ class Dataset:
     une borne) ; les fenêtres à cibles incomplètes sont écartées.
     """
 
-    def __init__(self, hourly: pd.DataFrame):
+    def __init__(self, hourly: pd.DataFrame, split_mode: str = "legacy"):
         self.hourly = hourly
         self.time_index = hourly.index
         self.y = hourly["Global_active_power"].to_numpy(float)
         self.n = len(hourly)
-        self.train_end = int(self.n * TRAIN_FRAC)
-        self.valid_end = int(self.n * (TRAIN_FRAC + VALID_FRAC))
+        self.split_mode = split_mode
+        if split_mode == "legacy":
+            self.train_end = int(self.n * TRAIN_FRAC)
+            self.valid_end = int(self.n * (TRAIN_FRAC + VALID_FRAC))
+        elif split_mode == "annual":
+            test_start = (self.time_index[-1] - pd.DateOffset(years=ANNUAL_TEST_YEARS)).normalize()
+            valid_start = test_start - pd.DateOffset(years=ANNUAL_VALID_YEARS)
+            self.train_end = int(self.time_index.searchsorted(valid_start, side="left"))
+            self.valid_end = int(self.time_index.searchsorted(test_start, side="left"))
+        else:
+            raise ValueError("split_mode doit valoir 'legacy' ou 'annual'.")
+        if not 0 < self.train_end < self.valid_end < self.n:
+            raise ValueError("La série est trop courte pour ce découpage temporel.")
         self.cal_array = calendar_features(self.time_index).to_numpy(np.float32)
 
         first = max(LOOKBACKS) - 1
-        # Entraînement : pas fin (1 h). Évaluation : pas de 6 h, aligné sur 0h/6h/12h/18h
-        # pour que chaque horizon h couvre plusieurs heures du jour.
-        a_tr = np.arange(first, self.n - HORIZON, TRAIN_STRIDE)
-        start_ev = next(i for i in range(first, self.n) if self.time_index[i].hour % EVAL_STRIDE == 0)
-        a_ev = np.arange(start_ev, self.n - HORIZON, EVAL_STRIDE)
-        self.train_origins = self._complete(a_tr[a_tr + HORIZON < self.train_end])
+        candidates = np.arange(first, self.n - HORIZON)
+        hours = self.time_index[candidates].hour.to_numpy()
+        self.train_candidates = candidates[hours % TRAIN_STRIDE == 0]
+        self.eval_candidates = candidates[hours % EVAL_STRIDE == 0]
+        self.train_origins = self._complete(
+            self.train_candidates[self.train_candidates + HORIZON < self.train_end])
         self.valid_origins = self._complete(
-            a_ev[(a_ev + 1 >= self.train_end) & (a_ev + HORIZON < self.valid_end)])
-        self.test_origins = self._complete(a_ev[a_ev + 1 >= self.valid_end])
-        self.trainval_origins = self._complete(a_tr[a_tr + HORIZON < self.valid_end])
+            self.eval_candidates[(self.eval_candidates + 1 >= self.train_end)
+                                 & (self.eval_candidates + HORIZON < self.valid_end)])
+        self.test_origins = self._complete(
+            self.eval_candidates[self.eval_candidates + 1 >= self.valid_end])
+        self.trainval_origins = self._complete(
+            self.train_candidates[self.train_candidates + HORIZON < self.valid_end])
+        self.folds = self.rolling_folds() if split_mode == "annual" else []
+        if self.folds:
+            # Même ensemble de prévisions que le notebook : aucun horizon ne traverse un pli.
+            self.valid_origins = np.concatenate([fold["valid_origins"] for fold in self.folds])
 
     def _complete(self, origins):
         return np.asarray([i for i in origins
                            if np.isfinite(self.y[i + 1:i + HORIZON + 1]).all()], dtype=int)
+
+    def rolling_folds(self, months: int = ROLLING_FOLD_MONTHS) -> list[dict]:
+        """Plis trimestriels à entraînement croissant sur l'année de validation.
+
+        Chaque jeu de 24 cibles reste dans son pli. Les mesures antérieures au pli
+        peuvent entrer dans l'historique ; seules les cibles terminées avant sa
+        borne de début peuvent entrer dans l'entraînement.
+        """
+        if self.split_mode != "annual":
+            raise ValueError("La validation glissante exige split_mode='annual'.")
+        if months < 1 or (12 * ANNUAL_VALID_YEARS) % months:
+            raise ValueError("months doit diviser la durée annuelle de validation.")
+        valid_start = self.time_index[self.train_end]
+        test_start = self.time_index[self.valid_end]
+        folds = []
+        for number in range(12 * ANNUAL_VALID_YEARS // months):
+            start_date = valid_start + pd.DateOffset(months=number * months)
+            stop_date = min(valid_start + pd.DateOffset(months=(number + 1) * months),
+                            test_start)
+            start = int(self.time_index.searchsorted(start_date, side="left"))
+            stop = int(self.time_index.searchsorted(stop_date, side="left"))
+            valid = self._complete(self.eval_candidates[
+                (self.eval_candidates + 1 >= start)
+                & (self.eval_candidates + HORIZON < stop)])
+            train = self._complete(self.train_candidates[
+                self.train_candidates + HORIZON < start])
+            if not len(train) or not len(valid):
+                raise ValueError(f"Pli {number + 1} sans origines utilisables.")
+            folds.append({"name": f"Bloc {number + 1}", "fit_end": start,
+                          "start": start, "stop": stop,
+                          "train_origins": train, "valid_origins": valid})
+        return folds
 
     def truth(self, origins) -> np.ndarray:
         return np.stack([self.y[i + 1:i + HORIZON + 1] for i in origins])
@@ -129,5 +180,5 @@ class Dataset:
         return tuple(np.asarray(v, np.float32) for v in (xh, xf, yy))
 
 
-def build_dataset(path=DATA_PATH) -> Dataset:
-    return Dataset(to_hourly(load_raw(path)))
+def build_dataset(path=DATA_PATH, split_mode: str = "legacy") -> Dataset:
+    return Dataset(to_hourly(load_raw(path)), split_mode=split_mode)

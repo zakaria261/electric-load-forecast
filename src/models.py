@@ -10,7 +10,8 @@ try:
 except (ImportError, OSError):      # torch absent/cassé : baselines et SARIMA restent utilisables
     torch = nn = None
 
-BASELINES = ["Persistance", "Moyenne mobile 24h", "Saisonnier quotidien", "Saisonnier hebdomadaire"]
+BASELINES = ["Persistance", "Moyenne mobile 24h", "Saisonnier quotidien",
+             "Saisonnier hebdomadaire", "Profil moyen 7 jours"]
 
 
 def baseline_predict(name: str, origins, y: np.ndarray, fallback: float) -> np.ndarray:
@@ -20,6 +21,7 @@ def baseline_predict(name: str, origins, y: np.ndarray, fallback: float) -> np.n
     - Moyenne mobile 24h : moyenne des 24 dernières heures connues, constante.
     - Saisonnier quotidien / hebdomadaire : même heure à J-1 / J-7 (lag >= 24 donc
       l'indice i+h-lag reste <= i pour tout horizon h <= 24).
+    - Profil moyen 7 jours : moyenne de la même heure sur les 7 derniers jours.
     Une valeur historique manquante est remplacée par `fallback` (médiane du train).
     """
     origins = np.asarray(origins)
@@ -35,6 +37,14 @@ def baseline_predict(name: str, origins, y: np.ndarray, fallback: float) -> np.n
         ix = origins[:, None] + h[None, :] - lag
         assert (ix >= 0).all() and (ix <= origins[:, None]).all()
         pred = y[ix].astype(float)
+    elif name == "Profil moyen 7 jours":
+        days = np.arange(1, 8)
+        ix = origins[:, None, None] + h[None, :, None] - 24 * days[None, None, :]
+        assert (ix >= 0).all() and (ix <= origins[:, None, None]).all()
+        history = y[ix]
+        count = np.isfinite(history).sum(axis=2)
+        pred = np.nansum(history, axis=2) / np.maximum(count, 1)
+        pred[count == 0] = np.nan
     else:
         raise ValueError(f"baseline inconnue : {name}")
     pred = np.where(np.isfinite(pred), pred, fallback)

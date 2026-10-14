@@ -1,7 +1,8 @@
 # Reste à faire — validation croisée glissante et livrables
 
-État au dernier push : pipeline complet (données, EDA, baselines, LSTM/TCN, SARIMA, ablation du
-calendrier, test final). Il manque la validation glissante et les livrables du sujet.
+Le pipeline historique couvre données, EDA, baselines, LSTM/TCN, SARIMA, ablation du
+calendrier et test final. Le code de validation glissante a été ajouté dans `src/` et
+`scripts/run_rolling_cv.py` ; ses nouveaux scores restent à produire.
 
 ## ⚠ Deux protocoles coexistent : à réconcilier en priorité
 
@@ -16,8 +17,8 @@ Pendant ce travail, `notebooks/01_TP_prevision_electrique_guide.ipynb` a été r
 sans hiver). **Les scores de `results/` ne sont donc pas comparables à ceux du notebook.**
 
 - [ ] Décider d'un protocole unique (proposé : celui du notebook, plus riche et avec l'hiver au test).
-- [ ] Porter dans `src/data_processing.py` le découpage par blocs (`rolling_folds`) du notebook,
-      pour que scripts et notebook partagent le même code.
+- [x] Porter dans `src/data_processing.py` le découpage par blocs (`rolling_folds`) du notebook.
+      Le notebook reste autonome dans Colab ; les deux implémentations suivent le même protocole.
 - [ ] Relancer SARIMA, TCN/LSTM, l'ablation du calendrier et le test avec ce protocole commun,
       puis régénérer `results/`.
 - [ ] Vérifier que le notebook et `src/` donnent les mêmes baselines (contrôle croisé).
@@ -42,7 +43,7 @@ sans hiver). **Les scores de `results/` ne sont donc pas comparables à ceux du 
 
 Objectif : vérifier que le classement des modèles est robuste selon la saison.
 
-- [ ] Créer `scripts/run_rolling_cv.py` et une fonction de plis dans `src/data_processing.py`
+- [x] Créer `scripts/run_rolling_cv.py` et une fonction de plis dans `src/data_processing.py`
       (`rolling_folds(...)`), en reprenant la logique des blocs déjà écrite dans le notebook.
 - [ ] Plan initial (si on garde le 70/15/15) : 6 plis trimestriels, de juin 2008 à avril 2010 ;
       au moins 18 mois d'entraînement pour le premier pli. Avec le protocole du notebook :
