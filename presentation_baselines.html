@@ -99,25 +99,30 @@
     .nav .presenter-launch { width: auto; padding: 0 12px; font-size: 15px; font-weight: 700; }
     body.audience-live .nav, body.presenter-mode .nav { display: none; }
     body.presenter-mode > .slide { display: none !important; }
-    .presenter-panel { display: none; position: fixed; inset: 0; z-index: 20; background: #102c32; color: #f8f6ef; padding: 24px 32px; flex-direction: column; gap: 20px; }
+    .presenter-panel { display: none; position: fixed; inset: 0; z-index: 20; background: #102c32; color: #f8f6ef; padding: 18px 26px; flex-direction: column; gap: 12px; }
     body.presenter-mode .presenter-panel { display: flex; }
     .presenter-header, .presenter-controls { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
     .presenter-header strong { display: block; font-size: 25px; }
     .presenter-status { display: block; color: #b9cfcd; font-size: 16px; margin-top: 3px; }
     .presenter-clock { font-size: 29px; font-weight: 750; font-variant-numeric: tabular-nums; }
-    .presenter-main { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(360px, .92fr); gap: 24px; min-height: 0; flex: 1; }
-    .presenter-label { font-size: 15px; font-weight: 750; letter-spacing: .11em; text-transform: uppercase; color: #a8c5c1; margin: 0 0 12px; }
+    .presenter-main { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 20px; min-height: 0; flex: 1; }
+    .presenter-label { font-size: 14px; font-weight: 750; letter-spacing: .11em; text-transform: uppercase; color: #a8c5c1; margin: 0 0 8px; }
     .presenter-preview-frame { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: #f7f5ef; box-shadow: 0 10px 35px #0005; }
     .presenter-preview-inner { width: 1280px; height: 720px; transform-origin: top left; }
     .presenter-preview-inner .slide { display: block; width: 1280px; height: 720px; min-height: 0; }
     .presenter-preview-inner .canvas { max-width: none; padding: 64px 77px 44px; }
-    .presenter-next { font-size: 20px; line-height: 1.35; color: #cadcd9; margin-top: 18px; }
+    .presenter-next { font-size: 17px; line-height: 1.35; color: #cadcd9; margin-top: 14px; }
     .presenter-next b { color: #f8f6ef; }
-    .presenter-notes { background: #fffaf0; color: #16343a; padding: 30px 34px; overflow: auto; min-height: 0; }
-    .presenter-notes h2 { font-size: clamp(27px, 2.2vw, 36px); line-height: 1.15; margin: 0 0 20px; }
-    .presenter-note-text { font-size: clamp(22px, 1.75vw, 29px); line-height: 1.52; }
-    .presenter-note-text p { margin: 0 0 1em; }
-    .presenter-controls { border-top: 1px solid #577177; padding-top: 18px; }
+    .presenter-notes { display: flex; flex-direction: column; background: #fffaf0; color: #16343a; padding: 20px 28px; overflow: hidden; min-height: 0; }
+    .presenter-notes h2 { flex: none; font-size: 28px; line-height: 1.15; margin: 0 0 12px; }
+    .presenter-note-text { flex: 1; min-height: 0; overflow: hidden; font-size: 26px; line-height: 1.34; }
+    .presenter-note-text p { margin: 0 0 .62em; }
+    .note-pagination { display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1px solid #cbd6d1; font-size: 16px; }
+    .note-pagination[hidden] { display: none; }
+    .note-pagination button { border: 1px solid #9badaa; background: #fffaf0; color: #16343a; border-radius: 4px; padding: 6px 10px; font: inherit; cursor: pointer; }
+    .note-pagination button:disabled { opacity: .45; cursor: default; }
+    .note-pagination span { margin-left: auto; }
+    .presenter-controls { border-top: 1px solid #577177; padding-top: 12px; }
     .presenter-controls button { border: 1px solid #91aaa7; background: #f7f5ef; color: #16343a; padding: 11px 18px; border-radius: 5px; font-family: inherit; font-size: 17px; font-weight: 700; cursor: pointer; }
     .presenter-controls button:disabled { opacity: .4; cursor: default; }
     .presenter-controls .close-presenter { margin-left: auto; background: transparent; color: #e9f1ef; }
@@ -130,8 +135,8 @@
       .method-list b { min-width: 142px; }
       .bar-row { grid-template-columns: 220px 1fr 82px; gap: 12px; }
       .bar-axis { margin-left: 232px; margin-right: 82px; }
-      .presenter-main { grid-template-columns: 1fr; overflow: auto; }
-      .presenter-notes { min-height: 240px; }
+      .presenter-main { grid-template-columns: 1fr; overflow: hidden; }
+      .presenter-preview-column { display: none; }
     }
     @media print {
       @page { size: 16in 9in; margin: 0; }
@@ -314,7 +319,7 @@
       <time id="presenter-clock" class="presenter-clock"></time>
     </header>
     <main class="presenter-main">
-      <div>
+      <div class="presenter-preview-column">
         <p class="presenter-label">Diapositive en cours</p>
         <div id="presenter-preview-frame" class="presenter-preview-frame"><div id="presenter-preview-inner" class="presenter-preview-inner"></div></div>
         <p class="presenter-next">Ensuite : <b id="presenter-next-title"></b></p>
@@ -323,6 +328,11 @@
         <p class="presenter-label" style="color:#526b70">Notes orales</p>
         <h2 id="presenter-note-title"></h2>
         <div id="presenter-note-text" class="presenter-note-text"></div>
+        <div id="note-pagination" class="note-pagination" hidden>
+          <button id="note-previous" type="button">← Texte</button>
+          <button id="note-next" type="button">Texte →</button>
+          <span id="note-page-count"></span>
+        </div>
       </div>
     </main>
     <footer class="presenter-controls">
@@ -342,6 +352,9 @@
     let current = 0;
     let presenterWindow = null;
     let audienceConnected = false;
+    let notePages = [];
+    let notePageIndex = 0;
+    let notePagesAreSentences = false;
     const messageTag = 'electric-baselines-presentation';
     function slideTitle(index) {
       return slides[index]?.querySelector('h1, h2')?.textContent.trim() || '';
@@ -351,6 +364,55 @@
       const frame = document.getElementById('presenter-preview-frame');
       document.getElementById('presenter-preview-inner').style.transform = `scale(${frame.clientWidth / 1280})`;
     }
+    function fitNoteFont(minSize = 18) {
+      const text = document.getElementById('presenter-note-text');
+      for (let size = 26; size >= minSize; size -= 1) {
+        text.style.fontSize = `${size}px`;
+        if (text.scrollHeight <= text.clientHeight + 2) return true;
+      }
+      return false;
+    }
+    function showNotePage() {
+      const text = document.getElementById('presenter-note-text');
+      const pager = document.getElementById('note-pagination');
+      pager.hidden = false;
+      text.innerHTML = notePages[notePageIndex];
+      if (!fitNoteFont(notePagesAreSentences ? 12 : 16) && !notePagesAreSentences) {
+        const raw = slides[current].querySelector('.notes').textContent.trim();
+        const sentences = raw.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [raw];
+        notePages = sentences.map(sentence => {
+          const paragraph = document.createElement('p');
+          paragraph.textContent = sentence.trim();
+          return paragraph.outerHTML;
+        });
+        notePagesAreSentences = true;
+        notePageIndex = 0;
+        showNotePage();
+        return;
+      }
+      document.getElementById('note-previous').disabled = notePageIndex === 0;
+      document.getElementById('note-next').disabled = notePageIndex === notePages.length - 1;
+      document.getElementById('note-page-count').textContent = `Texte ${notePageIndex + 1}/${notePages.length} · Espace pour continuer`;
+    }
+    function fitNotes() {
+      if (!presenterMode) return;
+      const text = document.getElementById('presenter-note-text');
+      document.getElementById('note-pagination').hidden = true;
+      text.innerHTML = slides[current].querySelector('.notes')?.innerHTML || '';
+      notePages = [];
+      notePageIndex = 0;
+      notePagesAreSentences = false;
+      if (fitNoteFont()) return;
+      notePages = [...slides[current].querySelectorAll('.notes p')].map(paragraph => paragraph.outerHTML);
+      if (notePages.length) showNotePage();
+    }
+    function advanceNotePage(direction) {
+      const next = notePageIndex + direction;
+      if (!presenterMode || next < 0 || next >= notePages.length) return false;
+      notePageIndex = next;
+      showNotePage();
+      return true;
+    }
     function updatePresenter() {
       if (!presenterMode) return;
       const inner = document.getElementById('presenter-preview-inner');
@@ -359,8 +421,6 @@
       preview.classList.add('active');
       inner.replaceChildren(preview);
       document.getElementById('presenter-note-title').textContent = slideTitle(current);
-      document.getElementById('presenter-note-text').innerHTML = slides[current].querySelector('.notes')?.innerHTML || '';
-      document.querySelector('.presenter-notes').scrollTop = 0;
       document.getElementById('presenter-next-title').textContent = current + 1 < slides.length ? slideTitle(current + 1) : 'Fin de la présentation';
       document.getElementById('presenter-counter').textContent = `${current + 1} / ${slides.length}`;
       document.getElementById('presenter-previous').disabled = current === 0;
@@ -370,7 +430,7 @@
         : window.opener && !window.opener.closed
           ? 'Connexion à la fenêtre publique…'
           : 'Ouvre ce mode depuis le bouton du diaporama pour synchroniser.';
-      requestAnimationFrame(scalePreview);
+      requestAnimationFrame(() => { scalePreview(); fitNotes(); });
     }
     function sendSlide() {
       const message = {tag: messageTag, type: 'slide', index: current};
@@ -401,6 +461,8 @@
     document.getElementById('open-presenter').addEventListener('click', openPresenter);
     document.getElementById('presenter-previous').addEventListener('click', () => show(current - 1));
     document.getElementById('presenter-next').addEventListener('click', () => show(current + 1));
+    document.getElementById('note-previous').addEventListener('click', () => advanceNotePage(-1));
+    document.getElementById('note-next').addEventListener('click', () => advanceNotePage(1));
     document.getElementById('close-presenter').addEventListener('click', () => window.close());
     window.addEventListener('message', (event) => {
       if (event.data?.tag !== messageTag) return;
@@ -420,11 +482,17 @@
     window.addEventListener('focus', () => {
       if (!presenterMode && presenterWindow?.closed) document.body.classList.remove('audience-live');
     });
-    window.addEventListener('resize', scalePreview);
+    window.addEventListener('resize', () => { scalePreview(); requestAnimationFrame(fitNotes); });
     document.addEventListener('keydown', (event) => {
       const buttonFocused = event.target instanceof HTMLElement && event.target.tagName === 'BUTTON';
-      if (['ArrowRight', 'PageDown', ' '].includes(event.key) && !(buttonFocused && event.key === ' ')) { event.preventDefault(); show(current + 1); }
-      if (['ArrowLeft', 'PageUp'].includes(event.key)) { event.preventDefault(); show(current - 1); }
+      if (['ArrowRight', 'PageDown', ' '].includes(event.key) && !(buttonFocused && event.key === ' ')) {
+        event.preventDefault();
+        if (!advanceNotePage(1)) show(current + 1);
+      }
+      if (['ArrowLeft', 'PageUp'].includes(event.key)) {
+        event.preventDefault();
+        if (!advanceNotePage(-1)) show(current - 1);
+      }
       if (event.key === 'Home') show(0);
       if (event.key === 'End') show(slides.length - 1);
       if (event.key.toLowerCase() === 'n' && !presenterMode) openPresenter();
