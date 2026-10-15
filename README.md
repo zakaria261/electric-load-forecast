@@ -2,6 +2,8 @@
 
 Ce projet prévoit, à partir des mesures connues à une heure d'émission, les **24 puissances horaires suivantes** d'un foyer du jeu UCI. Une sortie est donc un vecteur de 24 valeurs en kW, pas une seule valeur pour une heure fixe. Le [notebook guide](notebooks/01_TP_prevision_electrique_guide.ipynb) explique les données et chaque étape ; le [notebook de démonstration](notebooks/demo.ipynb) montre rapidement les résultats sauvegardés pour la présentation. `src/` porte les fonctions réutilisables.
 
+La [présentation HTML des baselines](presentation_baselines.html) s'ouvre directement dans un navigateur, sans Jupyter. Cliquer sur **Mode présentateur** ouvre une seconde fenêtre avec les notes orales et les commandes ; la fenêtre initiale reste destinée au public. Utiliser les écrans en **affichage étendu**, déplacer les notes sur l'écran privé, puis mettre la fenêtre publique sur le projecteur. Les flèches changent de diapositive dans les deux fenêtres ; **F** active le plein écran dans la fenêtre publique, **N** ouvre les notes et **P** ouvre l'impression pour exporter en PDF.
+
 ## Données et protocole commun
 
 Le [fichier UCI Household Electric Power Consumption](https://archive.ics.uci.edu/dataset/235/individualhouseholdelectricpowerconsumption) contient 2 075 259 lignes à la minute, de décembre 2006 à novembre 2010. Les sept variables électriques sont agrégées à l'heure : moyenne des grandeurs instantanées, somme des sous-compteurs. Une heure avec moins de 45 mesures valides reste manquante ; une prévision n'est évaluée que si ses 24 cibles sont observées. Le fichier téléchargé reste dans `data/`, ignoré par Git.

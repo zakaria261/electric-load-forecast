@@ -92,12 +92,36 @@
     .closing-text p { font-size: clamp(21px, 1.76vw, 27px); margin-bottom: 28px; }
     .closing-text strong { color: #f4a084; }
     .dark .season-list, .dark .closing-text { color: #f8f6ef; }
-    .notes { display: none; position: absolute; z-index: 8; left: 0; right: 0; bottom: 0; padding: 22px 8vw; background: #fff8dc; color: #192f32; font-size: 21px; line-height: 1.4; box-shadow: 0 -6px 28px #0003; }
-    body.show-notes .slide.active .notes { display: block; }
-    .notes b { display: block; margin-bottom: 7px; }
-    .nav { position: fixed; z-index: 9; left: 15px; bottom: 13px; display: flex; gap: 9px; opacity: .45; }
+    .notes { display: none; }
+    .nav { position: fixed; z-index: 9; left: 15px; bottom: 13px; display: flex; gap: 9px; opacity: .78; }
     .nav:hover, .nav:focus-within { opacity: 1; }
     .nav button { border: 1px solid #95a9a8; background: #f7f5ef; color: #16343a; width: 33px; height: 31px; border-radius: 4px; cursor: pointer; font-size: 20px; line-height: 1; }
+    .nav .presenter-launch { width: auto; padding: 0 12px; font-size: 15px; font-weight: 700; }
+    body.audience-live .nav, body.presenter-mode .nav { display: none; }
+    body.presenter-mode > .slide { display: none !important; }
+    .presenter-panel { display: none; position: fixed; inset: 0; z-index: 20; background: #102c32; color: #f8f6ef; padding: 24px 32px; flex-direction: column; gap: 20px; }
+    body.presenter-mode .presenter-panel { display: flex; }
+    .presenter-header, .presenter-controls { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .presenter-header strong { display: block; font-size: 25px; }
+    .presenter-status { display: block; color: #b9cfcd; font-size: 16px; margin-top: 3px; }
+    .presenter-clock { font-size: 29px; font-weight: 750; font-variant-numeric: tabular-nums; }
+    .presenter-main { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(360px, .92fr); gap: 24px; min-height: 0; flex: 1; }
+    .presenter-label { font-size: 15px; font-weight: 750; letter-spacing: .11em; text-transform: uppercase; color: #a8c5c1; margin: 0 0 12px; }
+    .presenter-preview-frame { width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: #f7f5ef; box-shadow: 0 10px 35px #0005; }
+    .presenter-preview-inner { width: 1280px; height: 720px; transform-origin: top left; }
+    .presenter-preview-inner .slide { display: block; width: 1280px; height: 720px; min-height: 0; }
+    .presenter-preview-inner .canvas { max-width: none; padding: 64px 77px 44px; }
+    .presenter-next { font-size: 20px; line-height: 1.35; color: #cadcd9; margin-top: 18px; }
+    .presenter-next b { color: #f8f6ef; }
+    .presenter-notes { background: #fffaf0; color: #16343a; padding: 30px 34px; overflow: auto; min-height: 0; }
+    .presenter-notes h2 { font-size: clamp(27px, 2.2vw, 36px); line-height: 1.15; margin: 0 0 20px; }
+    .presenter-note-text { font-size: clamp(22px, 1.75vw, 29px); line-height: 1.48; }
+    .presenter-note-text b { display: none; }
+    .presenter-controls { border-top: 1px solid #577177; padding-top: 18px; }
+    .presenter-controls button { border: 1px solid #91aaa7; background: #f7f5ef; color: #16343a; padding: 11px 18px; border-radius: 5px; font-family: inherit; font-size: 17px; font-weight: 700; cursor: pointer; }
+    .presenter-controls button:disabled { opacity: .4; cursor: default; }
+    .presenter-controls .close-presenter { margin-left: auto; background: transparent; color: #e9f1ef; }
+    .presenter-counter { font-size: 20px; font-variant-numeric: tabular-nums; white-space: nowrap; }
     a { color: inherit; }
     @media (max-width: 900px) {
       .slide { min-height: 600px; }
@@ -106,13 +130,15 @@
       .method-list b { min-width: 142px; }
       .bar-row { grid-template-columns: 220px 1fr 82px; gap: 12px; }
       .bar-axis { margin-left: 232px; margin-right: 82px; }
+      .presenter-main { grid-template-columns: 1fr; overflow: auto; }
+      .presenter-notes { min-height: 240px; }
     }
     @media print {
       @page { size: 16in 9in; margin: 0; }
       html, body { width: 16in; height: auto; background: white; }
-      .slide, .slide.active { display: block; width: 16in; height: 9in; min-height: 0; break-after: page; page-break-after: always; }
+      .slide, .slide.active, body.presenter-mode > .slide { display: block !important; width: 16in; height: 9in; min-height: 0; break-after: page; page-break-after: always; }
       .canvas { max-width: none; }
-      .nav, .notes { display: none !important; }
+      .nav, .notes, .presenter-panel { display: none !important; }
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
   </style>
@@ -127,7 +153,7 @@
       <p class="cover-sub">Les données, les baselines et ce qu’elles nous apprennent</p>
       <div class="spacer"></div>
       <p class="cover-scope">Présentation centrée sur les modèles de référence, avec les résultats de validation glissante déjà obtenus.</p>
-      <p class="footer">Flèches du clavier pour avancer · N pour les notes orales · P pour imprimer en PDF</p>
+      <p class="footer">Flèches du clavier pour avancer · N pour ouvrir le mode présentateur · P pour imprimer en PDF</p>
       <span class="slide-number">01 / 06</span>
       <aside class="notes"><b>À dire</b>Nous avons eu peu de temps pour ce TP. Nous avons calculé plusieurs modèles, mais nous choisissons ici d’expliquer ce que nous maîtrisons le mieux : les données, une baseline sérieuse et son évaluation. Une baseline sert de point de comparaison à tout modèle plus complexe.</aside>
     </div>
@@ -257,27 +283,140 @@
     </div>
   </section>
 
-  <div class="nav" aria-label="Navigation des diapositives"><button id="previous" aria-label="Diapositive précédente">‹</button><button id="next" aria-label="Diapositive suivante">›</button></div>
+  <div class="nav" aria-label="Navigation des diapositives"><button id="previous" aria-label="Diapositive précédente">‹</button><button id="next" aria-label="Diapositive suivante">›</button><button id="open-presenter" class="presenter-launch">Mode présentateur</button></div>
+  <div id="presenter-panel" class="presenter-panel" aria-label="Mode présentateur">
+    <header class="presenter-header">
+      <div><strong>Mode présentateur</strong><span id="presenter-status" class="presenter-status"></span></div>
+      <time id="presenter-clock" class="presenter-clock"></time>
+    </header>
+    <main class="presenter-main">
+      <div>
+        <p class="presenter-label">Diapositive en cours</p>
+        <div id="presenter-preview-frame" class="presenter-preview-frame"><div id="presenter-preview-inner" class="presenter-preview-inner"></div></div>
+        <p class="presenter-next">Ensuite : <b id="presenter-next-title"></b></p>
+      </div>
+      <div class="presenter-notes">
+        <p class="presenter-label" style="color:#526b70">Notes orales</p>
+        <h2 id="presenter-note-title"></h2>
+        <div id="presenter-note-text" class="presenter-note-text"></div>
+      </div>
+    </main>
+    <footer class="presenter-controls">
+      <button id="presenter-previous">← Précédente</button>
+      <span id="presenter-counter" class="presenter-counter"></span>
+      <button id="presenter-next">Suivante →</button>
+      <button id="close-presenter" class="close-presenter">Fermer les notes</button>
+    </footer>
+  </div>
   <script>
     const slides = [...document.querySelectorAll('.slide')];
+    const presenterMode = new URLSearchParams(location.search).get('presenter') === '1';
+    if (presenterMode) {
+      document.body.classList.add('presenter-mode');
+      document.title = 'Notes du présentateur — Prévision électrique à 24 h';
+    }
     let current = 0;
-    function show(index) {
+    let presenterWindow = null;
+    let audienceConnected = false;
+    const messageTag = 'electric-baselines-presentation';
+    function slideTitle(index) {
+      return slides[index]?.querySelector('h1, h2')?.textContent.trim() || '';
+    }
+    function scalePreview() {
+      if (!presenterMode) return;
+      const frame = document.getElementById('presenter-preview-frame');
+      document.getElementById('presenter-preview-inner').style.transform = `scale(${frame.clientWidth / 1280})`;
+    }
+    function updatePresenter() {
+      if (!presenterMode) return;
+      const inner = document.getElementById('presenter-preview-inner');
+      const preview = slides[current].cloneNode(true);
+      preview.querySelector('.notes')?.remove();
+      preview.classList.add('active');
+      inner.replaceChildren(preview);
+      document.getElementById('presenter-note-title').textContent = slideTitle(current);
+      document.getElementById('presenter-note-text').innerHTML = slides[current].querySelector('.notes')?.innerHTML || '';
+      document.getElementById('presenter-next-title').textContent = current + 1 < slides.length ? slideTitle(current + 1) : 'Fin de la présentation';
+      document.getElementById('presenter-counter').textContent = `${current + 1} / ${slides.length}`;
+      document.getElementById('presenter-previous').disabled = current === 0;
+      document.getElementById('presenter-next').disabled = current === slides.length - 1;
+      document.getElementById('presenter-status').textContent = audienceConnected
+        ? 'La fenêtre publique suit cette diapositive.'
+        : window.opener && !window.opener.closed
+          ? 'Connexion à la fenêtre publique…'
+          : 'Ouvre ce mode depuis le bouton du diaporama pour synchroniser.';
+      requestAnimationFrame(scalePreview);
+    }
+    function sendSlide() {
+      const message = {tag: messageTag, type: 'slide', index: current};
+      if (presenterMode && window.opener && !window.opener.closed) window.opener.postMessage(message, '*');
+      if (!presenterMode && presenterWindow && !presenterWindow.closed) presenterWindow.postMessage(message, '*');
+    }
+    function show(index, fromPeer = false) {
       current = Math.max(0, Math.min(slides.length - 1, index));
       slides.forEach((slide, i) => slide.classList.toggle('active', i === current));
       history.replaceState(null, '', `#slide-${current + 1}`);
+      updatePresenter();
+      if (!fromPeer) sendSlide();
+    }
+    function openPresenter() {
+      if (presenterWindow && !presenterWindow.closed) { presenterWindow.focus(); return; }
+      const url = new URL(location.href);
+      url.searchParams.set('presenter', '1');
+      url.hash = `slide-${current + 1}`;
+      presenterWindow = window.open(url.href, '_blank', 'width=1250,height=780');
+      if (!presenterWindow) { window.alert('Autorise les fenêtres pop-up pour ouvrir les notes du présentateur.'); return; }
+      document.body.classList.add('audience-live');
+    }
+    function updateClock() {
+      if (presenterMode) document.getElementById('presenter-clock').textContent = new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
     }
     document.getElementById('previous').addEventListener('click', () => show(current - 1));
     document.getElementById('next').addEventListener('click', () => show(current + 1));
+    document.getElementById('open-presenter').addEventListener('click', openPresenter);
+    document.getElementById('presenter-previous').addEventListener('click', () => show(current - 1));
+    document.getElementById('presenter-next').addEventListener('click', () => show(current + 1));
+    document.getElementById('close-presenter').addEventListener('click', () => window.close());
+    window.addEventListener('message', (event) => {
+      if (event.data?.tag !== messageTag) return;
+      if (presenterMode && event.source !== window.opener) return;
+      if (!presenterMode && event.source !== presenterWindow) return;
+      if (event.data.type === 'slide' && Number.isInteger(event.data.index)) {
+        if (presenterMode) audienceConnected = true;
+        show(event.data.index, true);
+      }
+      if (!presenterMode && event.data.type === 'ready') { document.body.classList.add('audience-live'); sendSlide(); }
+      if (!presenterMode && event.data.type === 'closed') document.body.classList.remove('audience-live');
+    });
+    window.addEventListener('beforeunload', () => {
+      if (presenterMode && window.opener && !window.opener.closed)
+        window.opener.postMessage({tag: messageTag, type: 'closed'}, '*');
+    });
+    window.addEventListener('focus', () => {
+      if (!presenterMode && presenterWindow?.closed) document.body.classList.remove('audience-live');
+    });
+    window.addEventListener('resize', scalePreview);
     document.addEventListener('keydown', (event) => {
-      if (['ArrowRight', 'PageDown', ' '].includes(event.key)) { event.preventDefault(); show(current + 1); }
+      const buttonFocused = event.target instanceof HTMLElement && event.target.tagName === 'BUTTON';
+      if (['ArrowRight', 'PageDown', ' '].includes(event.key) && !(buttonFocused && event.key === ' ')) { event.preventDefault(); show(current + 1); }
       if (['ArrowLeft', 'PageUp'].includes(event.key)) { event.preventDefault(); show(current - 1); }
       if (event.key === 'Home') show(0);
       if (event.key === 'End') show(slides.length - 1);
-      if (event.key.toLowerCase() === 'n') document.body.classList.toggle('show-notes');
+      if (event.key.toLowerCase() === 'n' && !presenterMode) openPresenter();
       if (event.key.toLowerCase() === 'p') window.print();
+      if (event.key.toLowerCase() === 'f' && !presenterMode) {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen?.();
+      }
     });
     const fromHash = Number(location.hash.match(/^#slide-(\d+)$/)?.[1]);
     if (fromHash) show(fromHash - 1);
+    else if (presenterMode) updatePresenter();
+    if (presenterMode) {
+      updateClock();
+      setInterval(updateClock, 30000);
+      if (window.opener && !window.opener.closed) window.opener.postMessage({tag: messageTag, type: 'ready'}, '*');
+    }
   </script>
 </body>
 </html>
