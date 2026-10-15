@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Prévision électrique à 24 h — les baselines</title>
+  <title>Prévision électrique à 24 h — baselines et modèles</title>
   <style>
     :root {
       --paper: #f7f5ef;
@@ -81,6 +81,30 @@
     .bar-axis { display: flex; justify-content: space-between; margin-left: 339px; margin-right: 110px; padding-top: 4px; border-top: 2px solid #98aaa8; color: var(--muted); font-size: 18px; }
     .result-lead { font-size: clamp(21px, 1.75vw, 27px); margin-bottom: 15px; }
     .results-callout { margin-top: 15px; margin-bottom: 0; font-size: clamp(23px, 2.1vw, 32px); font-weight: 650; }
+    .forecast-flow { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 2px 0 26px; }
+    .forecast-flow div { background: #dce9e4; padding: 15px 20px; border-top: 6px solid var(--teal); }
+    .forecast-flow div:last-child { background: #f3e6da; border-top-color: var(--coral); }
+    .forecast-flow b { display: block; font-size: clamp(19px, 1.7vw, 26px); }
+    .forecast-flow span { display: block; font-size: clamp(16px, 1.25vw, 19px); color: var(--muted); margin-top: 5px; }
+    .flow-intro { color: var(--muted); font-size: clamp(17px, 1.3vw, 20px); margin-bottom: 8px; }
+    .model-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; flex: 1; }
+    .model-card { border: 1px solid var(--line); padding: 24px; background: #fffdf8; }
+    .model-card h3 { color: var(--teal); margin-bottom: 15px; }
+    .model-card p { font-size: clamp(19px, 1.55vw, 24px); margin-bottom: 12px; }
+    .model-card small { display: block; color: var(--muted); font-size: clamp(16px, 1.19vw, 18px); line-height: 1.3; }
+    .comparison-table { width: 100%; border-collapse: collapse; font-size: clamp(20px, 1.9vw, 29px); font-variant-numeric: tabular-nums; }
+    .comparison-table th { text-align: left; color: var(--muted); font-size: clamp(17px, 1.35vw, 21px); padding: 10px 18px; border-bottom: 2px solid var(--ink); }
+    .comparison-table td { padding: 16px 18px; border-bottom: 1px solid var(--line); }
+    .comparison-table td:last-child, .comparison-table th:last-child { text-align: right; }
+    .comparison-table .winner td { color: var(--coral); font-weight: 800; }
+    .comparison-table .reference td { background: #e5eee9; font-weight: 720; }
+    .comparison-note { background: #e5eee9; border-left: 6px solid var(--teal); margin-top: 25px; padding: 20px 28px; font-size: clamp(22px, 1.9vw, 29px); }
+    .comparison-slide h2 { margin-bottom: 14px; }
+    .comparison-slide .result-lead { margin-bottom: 7px; }
+    .comparison-slide .comparison-table th { padding: 7px 15px; }
+    .comparison-slide .comparison-table td { padding: 10px 15px; }
+    .comparison-slide .comparison-note { margin-top: 15px; padding: 13px 18px; font-size: clamp(21px, 1.8vw, 27px); }
+    .comparison-slide .footer { padding-top: 10px; }
     .closing-grid { display: grid; grid-template-columns: 58% 42%; gap: 50px; align-items: start; flex: 1; }
     .season-list { margin-top: 5px; }
     .season-row { display: grid; grid-template-columns: 124px 1fr 106px; align-items: center; gap: 20px; padding: 12px 0; font-size: clamp(19px, 1.7vw, 26px); }
@@ -131,7 +155,8 @@
     @media (max-width: 900px) {
       .slide { min-height: 600px; }
       .canvas { padding: 30px 36px 38px; }
-      .data-grid, .baseline-grid, .evaluation-bottom, .closing-grid { gap: 24px; }
+      .data-grid, .baseline-grid, .evaluation-bottom, .closing-grid, .model-grid { gap: 24px; }
+      .model-card { padding: 16px; }
       .method-list b { min-width: 142px; }
       .bar-row { grid-template-columns: 220px 1fr 82px; gap: 12px; }
       .bar-axis { margin-left: 232px; margin-right: 82px; }
@@ -149,26 +174,26 @@
   </style>
 </head>
 <body>
-  <section class="slide dark active" aria-label="Diapositive 1 sur 6">
+  <section class="slide dark active" aria-label="Diapositive 1 sur 8">
     <div class="canvas">
       <p class="eyebrow">Projet 1 · Prévision de consommation électrique</p>
       <div class="spacer"></div>
       <div class="cover-lines"></div>
       <h1>Prévision électrique à 24 h</h1>
-      <p class="cover-sub">Les données, les baselines et ce qu’elles nous apprennent</p>
+      <p class="cover-sub">Des baselines aux modèles TCN et LSTM</p>
       <div class="spacer"></div>
-      <p class="cover-scope">Présentation centrée sur les modèles de référence, avec les résultats de validation glissante déjà obtenus.</p>
+      <p class="cover-scope">Huit diapositives : comprendre les données, établir une référence simple et comparer les modèles sur la validation glissante.</p>
       <p class="footer">Flèches du clavier pour avancer · N pour ouvrir le mode présentateur · P pour imprimer en PDF</p>
-      <span class="slide-number">01 / 06</span>
+      <span class="slide-number">01 / 08</span>
       <aside class="notes">
         <p>Bonjour. Notre sujet est la prévision de la consommation électrique d’un foyer sur les vingt-quatre prochaines heures. À chaque heure de départ, nous voulons donc produire vingt-quatre prévisions horaires, et pas seulement une valeur pour une heure fixe.</p>
-        <p>Comme le temps consacré au TP était court, nous avons choisi de centrer cet exposé sur les baselines. Ce sont des méthodes simples qui utilisent les consommations déjà observées. Nous avons aussi exécuté des modèles plus avancés, mais nous n’allons pas prétendre avoir étudié et réglé complètement chaque architecture.</p>
-        <p>Nous allons d’abord présenter les données, puis expliquer concrètement comment fonctionne notre meilleure baseline. Ensuite, nous montrerons comment nous l’avons évaluée dans le temps et ce que signifient les erreurs obtenues. La question à garder en tête est la suivante : quelle précision obtient-on déjà avec une règle simple, avant de demander davantage à un modèle complexe ?</p>
+        <p>Comme le temps consacré au TP était court, nous avons choisi de centrer cet exposé sur les baselines. Ce sont des méthodes simples qui utilisent les consommations déjà observées. Nous avons aussi exécuté un TCN, un LSTM et un modèle statistique SARIMA. Nous présenterons leurs résultats, sans prétendre avoir exploré tous leurs réglages.</p>
+        <p>Nous allons d’abord présenter les données, puis expliquer concrètement notre meilleure baseline. Ensuite, nous montrerons comment nous l’avons évaluée dans le temps. Enfin, nous expliquerons les modèles entraînés et comparerons leurs erreurs sur exactement les mêmes prévisions. La question à garder en tête est : quel gain mesurable obtient-on par rapport à une règle simple ?</p>
       </aside>
     </div>
   </section>
 
-  <section class="slide" aria-label="Diapositive 2 sur 6">
+  <section class="slide" aria-label="Diapositive 2 sur 8">
     <div class="canvas">
       <p class="eyebrow">01 · Données</p>
       <h2>Une série horaire avec des cycles visibles</h2>
@@ -184,7 +209,7 @@
         </figure>
       </div>
       <p class="footer">Source : jeu UCI Individual Household Electric Power Consumption, analyses du projet. 1,27 % des heures ont une cible manquante.</p>
-      <span class="slide-number">02 / 06</span>
+      <span class="slide-number">02 / 08</span>
       <aside class="notes">
         <p>Nous utilisons le jeu de données UCI sur la consommation d’un seul foyer. Il contient deux millions soixante-quinze mille deux cent cinquante-neuf mesures prises à la minute, entre décembre 2006 et novembre 2010. Le fichier donne plusieurs grandeurs électriques, mais notre cible est la puissance active globale, exprimée en kilowatts.</p>
         <p>Pour obtenir une série adaptée à la prévision demandée, nous regroupons les mesures par heure et calculons la puissance moyenne de chaque heure. Cela donne une grille de trente-quatre mille cinq cent quatre-vingt-neuf heures. Une heure doit contenir au moins quarante-cinq mesures valides ; sinon, sa cible reste manquante. Au total, environ 1,27 % des cibles horaires manquent. Nous n’évaluons pas une prévision de vingt-quatre heures si une de ses vingt-quatre valeurs réelles manque.</p>
@@ -193,7 +218,7 @@
     </div>
   </section>
 
-  <section class="slide" aria-label="Diapositive 3 sur 6">
+  <section class="slide" aria-label="Diapositive 3 sur 8">
     <div class="canvas">
       <p class="eyebrow">02 · Principe</p>
       <h2>Une baseline est une règle de prévision simple</h2>
@@ -216,7 +241,7 @@
         </div>
       </div>
       <p class="footer">Exemple tiré du premier bloc de validation. Toutes les règles utilisent uniquement des valeurs connues à l’heure d’émission.</p>
-      <span class="slide-number">03 / 06</span>
+      <span class="slide-number">03 / 08</span>
       <aside class="notes">
         <p>Une baseline est une règle de référence. Elle nous permet de savoir si un modèle plus compliqué apporte réellement quelque chose. Nous en comparons cinq. La persistance répète la dernière mesure connue pendant les vingt-quatre heures à prévoir. La moyenne mobile répète la moyenne des vingt-quatre dernières heures. La règle J moins un reprend, pour chaque heure future, la mesure de la même heure la veille. J moins sept utilise la même heure une semaine plus tôt.</p>
         <p>Notre dernière règle, le profil moyen des sept jours, calcule pour chaque heure future la moyenne des mesures prises à cette même heure pendant les sept jours précédents. Elle garde ainsi le cycle quotidien tout en évitant de dépendre d’une seule journée inhabituelle.</p>
@@ -225,7 +250,7 @@
     </div>
   </section>
 
-  <section class="slide" aria-label="Diapositive 4 sur 6">
+  <section class="slide" aria-label="Diapositive 4 sur 8">
     <div class="canvas">
       <p class="eyebrow">03 · Protocole</p>
       <h2>Évaluer sans regarder le futur</h2>
@@ -248,7 +273,7 @@
         </div>
       </div>
       <p class="footer">Résultats présentés ensuite : 4 blocs de validation, 1 412 émissions et 33 888 couples émission–horizon. Les fenêtres peuvent se chevaucher.</p>
-      <span class="slide-number">04 / 06</span>
+      <span class="slide-number">04 / 08</span>
       <aside class="notes">
         <p>Pour comparer ces règles correctement, nous respectons l’ordre du temps. Les premières données vont jusqu’au 25 novembre 2008. Ensuite, nous évaluons sur quatre blocs successifs de trois mois, entre novembre 2008 et novembre 2009. Avant chaque bloc, les modèles qui ont besoin d’un entraînement n’utilisent que les données antérieures. Les baselines, elles, sont recalculées à chaque émission avec l’historique déjà connu. La dernière année vient après cette validation.</p>
         <p>En validation, nous lançons une prévision à minuit, 6 heures, midi et 18 heures. Nous couvrons donc plusieurs moments de la journée. À chaque départ, nous prévoyons les vingt-quatre heures suivantes. Après exclusion des fenêtres dont la cible est incomplète, nous obtenons 1 412 départs et 33 888 comparaisons entre une prévision et une heure future observée. Toutes les méthodes sont jugées sur exactement ces mêmes comparaisons.</p>
@@ -257,7 +282,7 @@
     </div>
   </section>
 
-  <section class="slide" aria-label="Diapositive 5 sur 6">
+  <section class="slide" aria-label="Diapositive 5 sur 8">
     <div class="canvas">
       <p class="eyebrow">04 · Résultats</p>
       <h2>Le profil 7 jours est la meilleure baseline</h2>
@@ -272,7 +297,7 @@
       </div>
       <p class="results-callout">Moyenner les sept derniers jours réduit l’erreur de <span class="accent">37 %</span> par rapport à la persistance.</p>
       <p class="footer">Source : validation croisée du projet, historique 24 h. Scores arrondis à trois décimales ; mêmes 33 888 cibles pour toutes les règles.</p>
-      <span class="slide-number">05 / 06</span>
+      <span class="slide-number">05 / 08</span>
       <aside class="notes">
         <p>Voici les résultats des cinq baselines sur les mêmes 33 888 comparaisons de validation. La barre la plus courte est la meilleure, car elle indique une erreur moyenne plus faible. La persistance arrive à 0,767 kilowatt de MAE. Répéter la moyenne des vingt-quatre dernières heures réduit cette erreur à 0,656 kilowatt. Reprendre la même heure de la veille donne 0,609 kilowatt, et reprendre celle de la semaine précédente donne 0,571 kilowatt.</p>
         <p>Le meilleur résultat est le profil moyen des sept jours, avec 0,480 kilowatt. Par rapport à la persistance, sa MAE baisse d’environ 37 %. Ce pourcentage décrit uniquement une réduction de l’erreur de prévision : nous n’avons pas mesuré ici une réduction de la facture ou de la consommation réelle.</p>
@@ -281,9 +306,71 @@
     </div>
   </section>
 
-  <section class="slide dark" aria-label="Diapositive 6 sur 6">
+  <section class="slide" aria-label="Diapositive 6 sur 8">
     <div class="canvas">
-      <p class="eyebrow">05 · Conclusion</p>
+      <p class="eyebrow">05 · Modèles entraînés</p>
+      <h2>Trois façons d’aller au-delà des baselines</h2>
+      <p class="flow-intro">Pour les réseaux TCN et LSTM :</p>
+      <div class="forecast-flow" aria-label="Entrées et sortie des modèles neuronaux">
+        <div><b>24 h d’historique</b><span>7 mesures électriques connues</span></div>
+        <div><b>24 h de calendrier futur</b><span>heure, jour, saison, week-end, férié</span></div>
+        <div><b>24 valeurs prévues</b><span>puissance active horaire en kW</span></div>
+      </div>
+      <div class="model-grid">
+        <article class="model-card">
+          <h3>TCN</h3>
+          <p>Un réseau de convolutions causales repère des motifs dans l’historique.</p>
+          <small>Il prévoit les 24 heures en une seule sortie.</small>
+        </article>
+        <article class="model-card">
+          <h3>LSTM</h3>
+          <p>Un réseau récurrent résume la succession des mesures dans une mémoire.</p>
+          <small>Mêmes entrées et même horizon que le TCN.</small>
+        </article>
+        <article class="model-card">
+          <h3>SARIMA</h3>
+          <p>Un modèle statistique exploite la série de puissance et son cycle quotidien.</p>
+          <small>Référence statistique univariée, sans variables calendaires.</small>
+        </article>
+      </div>
+      <p class="footer">TCN et LSTM : historique de 24 h, calendrier connu à l’avance, 4 époques et moyenne de 2 graines par bloc. SARIMA : saisonnalité de 24 h.</p>
+      <span class="slide-number">06 / 08</span>
+      <aside class="notes">
+        <p>Après les règles simples, nous avons entraîné trois autres approches. Les deux réseaux, TCN et LSTM, reçoivent vingt-quatre heures d’historique : la puissance active et six autres mesures électriques. Ils reçoivent aussi les informations de calendrier des vingt-quatre heures à prévoir, comme l’heure, le jour de la semaine et le jour férié. Ces informations sont connues au moment de la prévision. En revanche, nous ne leur donnons aucune mesure électrique future.</p>
+        <p>Le TCN utilise des convolutions causales. Concrètement, il cherche des motifs dans les mesures passées, sans consulter une mesure située après l’heure de départ. Le LSTM est un réseau récurrent : il parcourt les mesures dans l’ordre et conserve un résumé de ce qu’il a vu. Dans notre code, les deux produisent directement vingt-quatre valeurs horaires à partir du même historique et du même calendrier. Cela rend leur comparaison assez directe.</p>
+        <p>Nous avons aussi SARIMA, une référence statistique qui exploite uniquement la puissance passée et un cycle quotidien de vingt-quatre heures. Pour rester transparents sur le temps de travail, les réseaux ont été entraînés pendant quatre époques par bloc, avec deux initialisations dont nous moyennons les prévisions. Ce sont des résultats réels, mais ils ne représentent pas une recherche exhaustive du meilleur réglage possible.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="slide comparison-slide" aria-label="Diapositive 7 sur 8">
+    <div class="canvas">
+      <p class="eyebrow">06 · Comparaison</p>
+      <h2>Le TCN arrive en tête, de très peu</h2>
+      <p class="result-lead muted">MAE globale en kW sur les quatre mêmes blocs de validation ; plus petit signifie meilleur.</p>
+      <table class="comparison-table">
+        <thead><tr><th>Modèle</th><th>Type</th><th>MAE</th></tr></thead>
+        <tbody>
+          <tr class="winner"><td>TCN 24 h + calendrier</td><td>Réseau convolutif</td><td>0,4786</td></tr>
+          <tr class="reference"><td>Profil moyen 7 jours</td><td>Baseline</td><td>0,4804</td></tr>
+          <tr><td>SARIMA</td><td>Statistique</td><td>0,4870</td></tr>
+          <tr><td>LSTM 24 h + calendrier</td><td>Réseau récurrent</td><td>0,4872</td></tr>
+        </tbody>
+      </table>
+      <p class="comparison-note">Écart TCN–baseline : <strong>0,0018 kW</strong> de MAE, soit environ <strong>0,4 %</strong>. Le gain n’est pas établi comme stable.</p>
+      <p class="footer">Source : results/rolling_cv_summary.csv · 33 888 couples émission–horizon par méthode · historique 24 h pour les réseaux.</p>
+      <span class="slide-number">07 / 08</span>
+      <aside class="notes">
+        <p>Nous comparons maintenant les quatre méthodes sur les mêmes quatre blocs de validation. Il s’agit de la MAE globale, calculée sur 33 888 couples entre une origine de prévision et une heure future. Plus la MAE est faible, mieux c’est. Le TCN avec vingt-quatre heures d’historique et le calendrier obtient 0,4786 kilowatt. Notre profil moyen des sept jours est juste derrière à 0,4804 kilowatt. SARIMA atteint 0,4870 kilowatt et le LSTM 0,4872 kilowatt.</p>
+        <p>Deux points sont essentiels pour lire ce tableau. D’abord, le LSTM et SARIMA ont bien été exécutés ; leurs scores sont proches de ceux du TCN et de la baseline. Ensuite, le TCN ne devance la baseline que de 0,0018 kilowatt de MAE, environ 0,4 pour cent de l’erreur de la baseline. C’est un écart de score minuscule, pas une preuve que la consommation réelle diminuerait de ce montant.</p>
+        <p>Nous avons aussi regardé la différence TCN moins baseline en regroupant les erreurs par semaines. L’intervalle descriptif obtenu inclut zéro, et les quatre blocs ne montrent pas tous le même avantage. Nous pouvons donc dire que le TCN a le meilleur score global ici, mais pas qu’il gagne de façon fiable dans toutes les périodes. Cette prudence explique pourquoi notre présentation insiste autant sur la baseline.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="slide dark" aria-label="Diapositive 8 sur 8">
+    <div class="canvas">
+      <p class="eyebrow">07 · Conclusion</p>
       <h2>Une référence solide, avec des limites visibles</h2>
       <div class="closing-grid">
         <div>
@@ -298,16 +385,16 @@
         </div>
         <div class="closing-text">
           <p>La règle des sept jours capture une grande partie du cycle quotidien.</p>
-          <p>Le TCN atteint <strong>0,479 kW</strong> sur cette validation, contre <strong>0,480 kW</strong> pour la baseline. Cet écart est trop faible pour conclure à un gain net.</p>
+          <p>TCN <strong>0,479 kW</strong>, profil 7 jours <strong>0,480 kW</strong>, SARIMA et LSTM <strong>0,487 kW</strong> : des scores proches.</p>
           <p class="muted">Suite du travail : analyser les erreurs d’hiver et les pics avant de défendre un modèle plus complexe.</p>
         </div>
       </div>
-      <p class="footer">Périmètre de l’exposé : baselines et validation. Les résultats TCN, LSTM et SARIMA existent dans le projet, sans analyse détaillée ici.</p>
-      <span class="slide-number">06 / 06</span>
+      <p class="footer">Résultats de validation uniquement. La sensibilité aux saisons et les pics demandent une analyse plus poussée.</p>
+      <span class="slide-number">08 / 08</span>
       <aside class="notes">
         <p>Le score global ne raconte pas toute l’histoire. Pour le profil moyen des sept jours, la MAE est de 0,617 kilowatt dans le premier bloc, de fin novembre à fin février. Elle descend à 0,356 kilowatt dans le troisième bloc, de fin mai à fin août. Les deux autres blocs se situent entre les deux. La méthode rencontre donc des périodes nettement plus difficiles. Ce constat justifie de regarder les saisons et les pics séparément ; il ne permet pas, à lui seul, d’attribuer toute la différence à la météo.</p>
-        <p>Nous avons également exécuté un réseau TCN. Sur cette même validation, sa MAE globale est de 0,479 kilowatt, contre 0,480 pour notre meilleure baseline. L’écart exact est d’environ 0,002 kilowatt, soit environ deux watts de puissance moyenne. Il est très petit par rapport aux variations entre blocs. Une analyse descriptive par semaines donne même un intervalle qui contient zéro. Nous ne pouvons donc pas dire que le TCN apporte ici un gain clair et stable.</p>
-        <p>Notre conclusion est qu’une règle simple, compréhensible et rapide fournit déjà une référence solide. Pour défendre un modèle plus complexe, il faudra montrer un avantage régulier, notamment sur l’hiver et sur les pics de consommation. Merci, nous pouvons maintenant répondre aux questions.</p>
+        <p>Sur le tableau précédent, le TCN avait le meilleur score global, mais son avantage sur la baseline était minime. SARIMA et LSTM étaient également proches. Les différences entre périodes sont beaucoup plus visibles que les différences entre ces quatre méthodes. C’est pourquoi le classement global ne suffit pas pour choisir un modèle avec confiance.</p>
+        <p>Notre conclusion est qu’une règle simple, compréhensible et rapide fournit déjà une référence solide. Pour défendre un modèle plus complexe, il faudra montrer un avantage régulier, notamment sur l’hiver et sur les pics de consommation, et analyser le comportement à chaque horizon. Ce travail reste à approfondir. Merci, nous pouvons maintenant répondre aux questions.</p>
       </aside>
     </div>
   </section>
