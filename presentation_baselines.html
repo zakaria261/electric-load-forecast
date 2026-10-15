@@ -43,18 +43,6 @@
     .cover-sub { font-size: clamp(26px, 2.35vw, 36px); color: #c7dad7; margin-bottom: 48px; }
     .cover-rule { width: 72px; height: 5px; background: var(--coral); margin-bottom: 34px; }
     .cover-authors { font-size: clamp(24px, 2.15vw, 33px); font-weight: 650; margin: 0; }
-    .cover-electricity { display: block; width: min(680px, 76vw); height: 82px; margin-top: 24px; overflow: visible; }
-    .electric-wire, .electric-current { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-    .electric-wire { stroke: #407179; stroke-width: 3; opacity: .75; }
-    .electric-current { stroke: #9af4e5; stroke-width: 5; stroke-dasharray: 120 880; animation: electric-flow 3.4s linear infinite; filter: drop-shadow(0 0 8px #78e7df); }
-    .electric-node { fill: #79c9c4; animation: electric-glow 3.4s ease-in-out infinite; }
-    .electric-node.end { animation-delay: 1.8s; }
-    @keyframes electric-flow { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
-    @keyframes electric-glow { 0%, 70%, 100% { opacity: .35; } 35% { opacity: 1; } }
-    @media (prefers-reduced-motion: reduce) {
-      .electric-current { animation: none; stroke-dasharray: none; opacity: .85; }
-      .electric-node { animation: none; opacity: .8; }
-    }
     .data-grid { display: grid; grid-template-columns: 42% 58%; gap: 26px; min-height: 0; align-items: center; flex: 1; }
     .data-fact { margin-bottom: 22px; }
     .data-fact strong { display: block; font-size: clamp(43px, 4.5vw, 70px); line-height: 1; letter-spacing: -.04em; color: var(--ink); }
@@ -189,8 +177,6 @@
       .slide, .slide.active, body.presenter-mode > .slide { display: block !important; width: 16in; height: 9in; min-height: 0; break-after: page; page-break-after: always; }
       .canvas { max-width: none; }
       .nav, .notes, .presenter-panel { display: none !important; }
-      .electric-current { animation: none; stroke-dasharray: none; }
-      .electric-node { animation: none; }
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
   </style>
@@ -204,12 +190,6 @@
         <p class="cover-sub">Prévision horaire à 24 h</p>
         <div class="cover-rule" aria-hidden="true"></div>
         <p class="cover-authors">Amine Abidi · Zakaria Rahou</p>
-        <svg class="cover-electricity" viewBox="0 0 680 90" aria-hidden="true" focusable="false">
-          <path class="electric-wire" d="M12 45 H264 L289 45 L310 18 L333 74 L356 31 L372 45 H668" />
-          <path class="electric-current" pathLength="1000" d="M12 45 H264 L289 45 L310 18 L333 74 L356 31 L372 45 H668" />
-          <circle class="electric-node" cx="12" cy="45" r="5" />
-          <circle class="electric-node end" cx="668" cy="45" r="5" />
-        </svg>
       </div>
       <span class="slide-number">01 / 08</span>
       <aside class="notes">
