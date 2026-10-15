@@ -115,8 +115,8 @@
     .presenter-next b { color: #f8f6ef; }
     .presenter-notes { background: #fffaf0; color: #16343a; padding: 30px 34px; overflow: auto; min-height: 0; }
     .presenter-notes h2 { font-size: clamp(27px, 2.2vw, 36px); line-height: 1.15; margin: 0 0 20px; }
-    .presenter-note-text { font-size: clamp(22px, 1.75vw, 29px); line-height: 1.48; }
-    .presenter-note-text b { display: none; }
+    .presenter-note-text { font-size: clamp(22px, 1.75vw, 29px); line-height: 1.52; }
+    .presenter-note-text p { margin: 0 0 1em; }
     .presenter-controls { border-top: 1px solid #577177; padding-top: 18px; }
     .presenter-controls button { border: 1px solid #91aaa7; background: #f7f5ef; color: #16343a; padding: 11px 18px; border-radius: 5px; font-family: inherit; font-size: 17px; font-weight: 700; cursor: pointer; }
     .presenter-controls button:disabled { opacity: .4; cursor: default; }
@@ -155,7 +155,11 @@
       <p class="cover-scope">Présentation centrée sur les modèles de référence, avec les résultats de validation glissante déjà obtenus.</p>
       <p class="footer">Flèches du clavier pour avancer · N pour ouvrir le mode présentateur · P pour imprimer en PDF</p>
       <span class="slide-number">01 / 06</span>
-      <aside class="notes"><b>À dire</b>Nous avons eu peu de temps pour ce TP. Nous avons calculé plusieurs modèles, mais nous choisissons ici d’expliquer ce que nous maîtrisons le mieux : les données, une baseline sérieuse et son évaluation. Une baseline sert de point de comparaison à tout modèle plus complexe.</aside>
+      <aside class="notes">
+        <p>Bonjour. Notre sujet est la prévision de la consommation électrique d’un foyer sur les vingt-quatre prochaines heures. À chaque heure de départ, nous voulons donc produire vingt-quatre prévisions horaires, et pas seulement une valeur pour une heure fixe.</p>
+        <p>Comme le temps consacré au TP était court, nous avons choisi de centrer cet exposé sur les baselines. Ce sont des méthodes simples qui utilisent les consommations déjà observées. Nous avons aussi exécuté des modèles plus avancés, mais nous n’allons pas prétendre avoir étudié et réglé complètement chaque architecture.</p>
+        <p>Nous allons d’abord présenter les données, puis expliquer concrètement comment fonctionne notre meilleure baseline. Ensuite, nous montrerons comment nous l’avons évaluée dans le temps et ce que signifient les erreurs obtenues. La question à garder en tête est la suivante : quelle précision obtient-on déjà avec une règle simple, avant de demander davantage à un modèle complexe ?</p>
+      </aside>
     </div>
   </section>
 
@@ -176,7 +180,11 @@
       </div>
       <p class="footer">Source : jeu UCI Individual Household Electric Power Consumption, analyses du projet. 1,27 % des heures ont une cible manquante.</p>
       <span class="slide-number">02 / 06</span>
-      <aside class="notes"><b>À dire</b>Le fichier d’origine contient plus de deux millions de lignes à la minute. Nous les regroupons à l’heure pour prévoir la puissance active moyenne. La carte montre un cycle journalier et des différences entre jours. Il manque environ 1,27 % des cibles horaires ; les fenêtres incomplètes sont écartées de l’évaluation.</aside>
+      <aside class="notes">
+        <p>Nous utilisons le jeu de données UCI sur la consommation d’un seul foyer. Il contient deux millions soixante-quinze mille deux cent cinquante-neuf mesures prises à la minute, entre décembre 2006 et novembre 2010. Le fichier donne plusieurs grandeurs électriques, mais notre cible est la puissance active globale, exprimée en kilowatts.</p>
+        <p>Pour obtenir une série adaptée à la prévision demandée, nous regroupons les mesures par heure et calculons la puissance moyenne de chaque heure. Cela donne une grille de trente-quatre mille cinq cent quatre-vingt-neuf heures. Une heure doit contenir au moins quarante-cinq mesures valides ; sinon, sa cible reste manquante. Au total, environ 1,27 % des cibles horaires manquent. Nous n’évaluons pas une prévision de vingt-quatre heures si une de ses vingt-quatre valeurs réelles manque.</p>
+        <p>Sur la carte à droite, chaque ligne correspond à une heure de la journée et chaque colonne à un jour de la semaine. Les couleurs montrent que la consommation change selon l’heure et selon le jour, avec des niveaux souvent élevés le soir. Ces cycles expliquent pourquoi copier simplement la dernière valeur peut être insuffisant. Ils motivent des règles qui recherchent la même heure dans les jours précédents.</p>
+      </aside>
     </div>
   </section>
 
@@ -204,7 +212,11 @@
       </div>
       <p class="footer">Exemple tiré du premier bloc de validation. Toutes les règles utilisent uniquement des valeurs connues à l’heure d’émission.</p>
       <span class="slide-number">03 / 06</span>
-      <aside class="notes"><b>À dire</b>Une baseline donne une exigence minimale : un modèle sophistiqué doit faire mieux. La persistance conserve la dernière mesure, J moins 1 copie l’heure de la veille, J moins 7 celle de la semaine précédente. Le profil sur sept jours atténue les accidents d’une seule journée. Ici, pour 19 h, sa prévision était 1,889 kW ; la mesure 1,474 kW ; l’erreur vaut 0,415 kW. On répète le calcul pour les 24 horizons.</aside>
+      <aside class="notes">
+        <p>Une baseline est une règle de référence. Elle nous permet de savoir si un modèle plus compliqué apporte réellement quelque chose. Nous en comparons cinq. La persistance répète la dernière mesure connue pendant les vingt-quatre heures à prévoir. La moyenne mobile répète la moyenne des vingt-quatre dernières heures. La règle J moins un reprend, pour chaque heure future, la mesure de la même heure la veille. J moins sept utilise la même heure une semaine plus tôt.</p>
+        <p>Notre dernière règle, le profil moyen des sept jours, calcule pour chaque heure future la moyenne des mesures prises à cette même heure pendant les sept jours précédents. Elle garde ainsi le cycle quotidien tout en évitant de dépendre d’une seule journée inhabituelle.</p>
+        <p>Voici un vrai exemple du premier bloc de validation. Le 1er décembre 2008, à 18 heures, nous préparons une prévision pour 19 heures. Les sept consommations déjà connues à 19 heures donnent une moyenne de 1,889 kilowatt. La consommation réellement observée à 19 heures est de 1,474 kilowatt. L’erreur absolue vaut donc 0,415 kilowatt. Ceci est l’erreur d’une seule heure, pas le score global. La même opération est faite pour chacune des vingt-trois autres heures à prévoir, toujours avec des valeurs disponibles au moment de la prévision.</p>
+      </aside>
     </div>
   </section>
 
@@ -232,7 +244,11 @@
       </div>
       <p class="footer">Résultats présentés ensuite : 4 blocs de validation, 1 412 émissions et 33 888 couples émission–horizon. Les fenêtres peuvent se chevaucher.</p>
       <span class="slide-number">04 / 06</span>
-      <aside class="notes"><b>À dire</b>Le découpage suit le temps. Nous entraînons sur le passé, puis évaluons sur quatre trimestres successifs. L’entraînement grandit avant le bloc suivant. Chaque prévision comporte 24 valeurs, et nous lançons une prévision toutes les six heures en validation. Une MAE de 0,480 kW n’est pas une énergie quotidienne en kWh : c’est l’écart moyen sur une puissance horaire. Les prévisions peuvent se chevaucher, car deux émissions distinctes peuvent viser la même heure civile.</aside>
+      <aside class="notes">
+        <p>Pour comparer ces règles correctement, nous respectons l’ordre du temps. Les premières données vont jusqu’au 25 novembre 2008. Ensuite, nous évaluons sur quatre blocs successifs de trois mois, entre novembre 2008 et novembre 2009. Avant chaque bloc, les modèles qui ont besoin d’un entraînement n’utilisent que les données antérieures. Les baselines, elles, sont recalculées à chaque émission avec l’historique déjà connu. La dernière année vient après cette validation.</p>
+        <p>En validation, nous lançons une prévision à minuit, 6 heures, midi et 18 heures. Nous couvrons donc plusieurs moments de la journée. À chaque départ, nous prévoyons les vingt-quatre heures suivantes. Après exclusion des fenêtres dont la cible est incomplète, nous obtenons 1 412 départs et 33 888 comparaisons entre une prévision et une heure future observée. Toutes les méthodes sont jugées sur exactement ces mêmes comparaisons.</p>
+        <p>La MAE est la moyenne des erreurs absolues. Par exemple, si nous prévoyons 1 kilowatt et observons 1,5 kilowatt, l’erreur est de 0,5 kilowatt. Une MAE de 0,480 kilowatt représente donc un écart moyen sur les puissances horaires prévues. Ce n’est pas 0,480 kilowattheure d’énergie sur une journée. Enfin, certaines prévisions se chevauchent : une même heure civile peut être prévue depuis plusieurs heures de départ.</p>
+      </aside>
     </div>
   </section>
 
@@ -252,7 +268,11 @@
       <p class="results-callout">Moyenner les sept derniers jours réduit l’erreur de <span class="accent">37 %</span> par rapport à la persistance.</p>
       <p class="footer">Source : validation croisée du projet, historique 24 h. Scores arrondis à trois décimales ; mêmes 33 888 cibles pour toutes les règles.</p>
       <span class="slide-number">05 / 06</span>
-      <aside class="notes"><b>À dire</b>La persistance semble naturelle mais son erreur moyenne est élevée à 0,767 kW. Reprendre l’heure de la semaine précédente améliore déjà beaucoup le score. Le profil sur sept jours est le meilleur des cinq avec 0,480 kW. La réduction d’environ 37 % est calculée par rapport à la persistance. Ce sont des moyennes globales ; il faut aussi regarder les saisons.</aside>
+      <aside class="notes">
+        <p>Voici les résultats des cinq baselines sur les mêmes 33 888 comparaisons de validation. La barre la plus courte est la meilleure, car elle indique une erreur moyenne plus faible. La persistance arrive à 0,767 kilowatt de MAE. Répéter la moyenne des vingt-quatre dernières heures réduit cette erreur à 0,656 kilowatt. Reprendre la même heure de la veille donne 0,609 kilowatt, et reprendre celle de la semaine précédente donne 0,571 kilowatt.</p>
+        <p>Le meilleur résultat est le profil moyen des sept jours, avec 0,480 kilowatt. Par rapport à la persistance, sa MAE baisse d’environ 37 %. Ce pourcentage décrit uniquement une réduction de l’erreur de prévision : nous n’avons pas mesuré ici une réduction de la facture ou de la consommation réelle.</p>
+        <p>Ce classement est cohérent avec le graphique des données. Une valeur isolée ne décrit pas bien toute la journée ; chercher la même heure dans le passé capture le cycle quotidien. En moyennant sept journées, nous atténuons aussi l’effet d’une journée exceptionnelle. Mais 0,480 kilowatt reste une moyenne : certaines heures, notamment les pics, peuvent être beaucoup plus difficiles. C’est pour cela que nous examinons aussi la variation entre les blocs.</p>
+      </aside>
     </div>
   </section>
 
@@ -279,7 +299,11 @@
       </div>
       <p class="footer">Périmètre de l’exposé : baselines et validation. Les résultats TCN, LSTM et SARIMA existent dans le projet, sans analyse détaillée ici.</p>
       <span class="slide-number">06 / 06</span>
-      <aside class="notes"><b>À dire</b>La même baseline est moins précise dans le premier bloc, qui couvre la fin de l’automne et l’hiver, que dans le troisième, de fin de printemps à l’été. Le TCN est très légèrement devant globalement, mais seulement d’environ 0,002 kW. Une analyse par semaines indique que cet écart reste compatible avec zéro. Nous ne revendiquons donc pas une victoire claire du réseau. La baseline est notre résultat le plus simple à expliquer et une base sérieuse pour la suite.</aside>
+      <aside class="notes">
+        <p>Le score global ne raconte pas toute l’histoire. Pour le profil moyen des sept jours, la MAE est de 0,617 kilowatt dans le premier bloc, de fin novembre à fin février. Elle descend à 0,356 kilowatt dans le troisième bloc, de fin mai à fin août. Les deux autres blocs se situent entre les deux. La méthode rencontre donc des périodes nettement plus difficiles. Ce constat justifie de regarder les saisons et les pics séparément ; il ne permet pas, à lui seul, d’attribuer toute la différence à la météo.</p>
+        <p>Nous avons également exécuté un réseau TCN. Sur cette même validation, sa MAE globale est de 0,479 kilowatt, contre 0,480 pour notre meilleure baseline. L’écart exact est d’environ 0,002 kilowatt, soit environ deux watts de puissance moyenne. Il est très petit par rapport aux variations entre blocs. Une analyse descriptive par semaines donne même un intervalle qui contient zéro. Nous ne pouvons donc pas dire que le TCN apporte ici un gain clair et stable.</p>
+        <p>Notre conclusion est qu’une règle simple, compréhensible et rapide fournit déjà une référence solide. Pour défendre un modèle plus complexe, il faudra montrer un avantage régulier, notamment sur l’hiver et sur les pics de consommation. Merci, nous pouvons maintenant répondre aux questions.</p>
+      </aside>
     </div>
   </section>
 
@@ -336,6 +360,7 @@
       inner.replaceChildren(preview);
       document.getElementById('presenter-note-title').textContent = slideTitle(current);
       document.getElementById('presenter-note-text').innerHTML = slides[current].querySelector('.notes')?.innerHTML || '';
+      document.querySelector('.presenter-notes').scrollTop = 0;
       document.getElementById('presenter-next-title').textContent = current + 1 < slides.length ? slideTitle(current + 1) : 'Fin de la présentation';
       document.getElementById('presenter-counter').textContent = `${current + 1} / ${slides.length}`;
       document.getElementById('presenter-previous').disabled = current === 0;
